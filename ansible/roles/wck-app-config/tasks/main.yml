@@ -33,13 +33,13 @@
      name: libapreq2
      state: present
 
-- name: Enable crontab access for CHD user
+- name: Enable crontab access for WCK user
   lineinfile:
     dest: "/etc/cron.allow"
     line: "wck"
     regexp: "^wck"
 
-- name: Disable password expiry for CHD user so it doesnt break cron
+- name: Disable password expiry for WCK user so it doesnt break cron
   command: "chage -m 0 -M 99999 -I -1 -E -1 wck"
 
 - name: Copy config templates to relevant locations
