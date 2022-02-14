@@ -5,11 +5,11 @@ selinux_status:
     state: permissive
 
 users:
-  - name: chd
+  - name: wck
     group: chlservices
     gid: 600
     
-app_user_home_path: /home/chd
+app_user_home_path: /home/wck
 
 s3_file_perl_lib: /application/shared/libraries/perl-xerces-lib.tar.gz
 s3_file_perl_lib_name: '{{ s3_file_perl_lib | basename }}'
