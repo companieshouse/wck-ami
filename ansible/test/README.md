@@ -1,4 +1,4 @@
-# CHD AMI testing
+# WCK AMI testing
 
 A simple docker setup to cover testing of Ansible.
 
