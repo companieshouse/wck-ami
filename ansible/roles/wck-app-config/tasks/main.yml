@@ -51,8 +51,8 @@
     mode: 0755
   loop:
     - etc/httpd/conf/httpd.conf.j2
-    - etc/httpd/conf/ewf_startup.pl
-    - etc/httpd/conf.d/ewf_perl.conf.j2
+    - etc/httpd/conf/wck_startup.pl
+    - etc/httpd/conf.d/wck_perl.conf.j2
 
 - name: Update Postfix configuration for mail relay (existing commented lines)
   lineinfile:
