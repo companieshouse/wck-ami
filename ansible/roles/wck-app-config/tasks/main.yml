@@ -1,0 +1,96 @@
+---
+- name: Download app library archive from s3
+  aws_s3:
+    bucket: '{{ s3_bucket }}'
+    object: '{{ s3_file_perl_lib }}'
+    dest: "/tmp/{{ s3_file_perl_lib_name }}"
+    mode: get
+
+- name: Unarchive app library download
+  unarchive:
+    src: "/tmp/{{ s3_file_perl_lib_name }}"
+    dest: /tmp/
+    remote_src: yes
+
+- name: Apply mod_cookietrack.so http module
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.6
+  copy:
+    src: /tmp/etc/httpd/modules/mod_cookietrack.so
+    dest: /etc/httpd/modules/mod_cookietrack.so
+    mode: 0755
+    remote_src: yes
+ 
+- name: Remove mod_cookietrack.so installation file
+  file:
+    path: /tmp/etc
+    state: absent
+
+- name: Install libapreq2 package for httpd mod_apreq2.so module requirement
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.6
+  yum:
+     name: libapreq2
+     state: present
+
+- name: Enable crontab access for WCK user
+  lineinfile:
+    dest: "/etc/cron.allow"
+    line: "wck"
+    regexp: "^wck"
+
+- name: Disable password expiry for WCK user so it doesnt break cron
+  command: "chage -m 0 -M 99999 -I -1 -E -1 wck"
+
+- name: Copy config templates to relevant locations
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.6
+  copy:
+    src: "{{ item }}"
+    dest: "/{{ item }}"
+    mode: 0755
+  loop:
+    - etc/httpd/conf/httpd.conf.j2
+    - etc/httpd/conf/wck_startup.pl
+    - etc/httpd/conf.d/wck_perl.conf.j2
+
+- name: Update Postfix configuration for mail relay (existing commented lines)
+  lineinfile:
+    dest: "/etc/postfix/{{ postfix_main_config_file }}"
+    line: "{{ item.key }} = {{ item.value }}"
+    regexp: "^#{{ item.key }} ="
+    insertafter: "^#{{ item.key }} ="
+  with_items: "{{ postfix_config }}"
+
+- name: Update Postfix network config (existing uncommented lines)
+  lineinfile:
+    dest: "/etc/postfix/{{ postfix_main_config_file }}"
+    line: "{{ item.key }} = {{ item.value }}"
+    regexp: "^{{ item.key }} ="
+  with_items: "{{ postfix_net_config }}"
+
+- name: Copy deployment scripts to server for later use
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.6
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_deploy_playbook_directory }}/{{ item | basename }}"
+    mode: 0644
+  loop:
+    - deployment-scripts/frontend_deployment.yml
+    - deployment-scripts/backend_deployment.yml
+
+- name: Setup deployment playbook dependancies (1/2)
+  vars:
+    ansible_python_interpreter: /usr/bin/python2.6  
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_deploy_playbook_directory }}/"
+    mode: 0755
+  loop: 
+    - requirements.yml
+
+- name: Setup deployment playbook dependancies (2/2)
+  command: "/usr/local/bin/ansible-galaxy install -f -r {{ansible_deploy_playbook_directory}}/requirements.yml"
+  register: requirements_output
+  changed_when: '"was installed successfully" in requirements_output.stdout'

@@ -1,0 +1,110 @@
+---
+  - name: Deploy WCK Frontend artifact
+    hosts: localhost
+    gather_facts: true
+    collections: 
+      - ch_collections.base
+    vars:
+      ansible_python_interpreter: /usr/local/bin/python3.6
+      application_name: "wck"
+      application_config_name: "wck-frontend"
+      home_dir: "/home/wck"
+      directories:
+        - "DATA"
+        - "MODULES"
+        - "htdocs"
+      config_files:
+        - "WCK"
+    roles:
+      - role: /root/roles/nfs_mounts
+        when: mounts is defined
+      - name: ch_collections.base.cloudwatch_agent_config
+        when: cw_log_files is defined
+    tasks:
+      - name: Download the versioned release artifact from S3
+        aws_s3:
+          bucket: "{{ s3_bucket_releases }}"
+          object: "chl-perl/{{ application_name }}/{{ application_name }}-{{ version }}.zip"
+          dest: "/tmp/{{ application_name }}-{{ version }}.zip"
+          mode: get
+
+      - name: Create temporary app folder for unzip
+        file:
+          path: "/tmp/{{ application_name }}-{{ version }}"
+          state: directory
+      
+      - name: Unarchive the artifact into its own folder
+        unarchive:
+          remote_src: yes
+          src: "/tmp/{{ application_name }}-{{ version }}.zip"
+          dest: "/tmp/{{ application_name }}-{{ version }}"
+      
+      - name: Copy folders to relevant locations
+        vars:
+          ansible_python_interpreter: /usr/bin/python2.6
+        copy:
+          src: "/tmp/{{ application_name }}-{{ version }}/{{ item }}"
+          dest: "{{ home_dir }}/"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          mode: 0755
+          remote_src: yes
+        loop: "{{ directories }}"
+      
+      - name: Make sure config directory exists
+        file:
+          path: "{{ home_dir }}/config/My"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          state: directory
+          recurse: yes
+          mode: 0755
+
+      - name: Symlinking "My::" to modules
+        ansible.builtin.file:
+          src: "{{ home_dir }}/config/My"
+          path: "{{ home_dir }}/MODULES/My"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          state: link
+
+      - name: Download environment config files from S3
+        aws_s3:
+          bucket: "{{ s3_bucket_configs }}"
+          object: "chl-{{ application_config_name }}-configs/{{ heritage_environment }}/{{ item | upper }}Config.pm"
+          dest: "{{ home_dir }}/config/My/{{ item | upper }}Config.pm"
+          mode: get
+        loop: "{{ config_files }}"
+
+      - name: Change config owners and permissions
+        ansible.builtin.file:
+          path: "{{ home_dir }}/config/My/{{ item | upper }}Config.pm"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          mode: 0755
+        loop: "{{ config_files }}"
+
+      - name: Cleanup install files
+        file:
+          path: "{{ item }}"
+          state: absent
+        with_items:
+          - "/tmp/{{ application_name }}-{{ version }}"
+          - "/tmp/{{ application_name }}-{{ version }}.zip"
+
+      - name: Ensure apache config files are all owned and permissions are set correctly
+        ansible.builtin.file:
+          path: "{{ item }}"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          mode: 0644
+        loop:
+          - /etc/httpd/conf/httpd.conf
+          - /etc/httpd/conf/startup.pl
+          - /etc/httpd/conf.d/perl.conf
+
+      - name: Enable and start httpd to complete deployment
+        ansible.builtin.service:
+          name: httpd
+          state: started
+          enabled: yes
