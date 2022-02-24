@@ -1,4 +1,3 @@
-#
 # Based upon the NCSA server configuration files originally by Rob McCool.
 #
 # This is the main Apache server configuration file.  It contains the
@@ -149,7 +148,6 @@ MaxRequestsPerChild  100
 #
 # To allow connections to IPv6 addresses add "Listen [::]:80"
 #
-#Listen 192.168.60.151:80
 Listen 0.0.0.0:80
 
 #
@@ -234,8 +232,7 @@ LoadModule apreq_module modules/mod_apreq2.so
 # Load config files from the config directory "/etc/httpd/conf.d".
 #
 
-#Include conf.d/ssl.conf
-Include conf.d/ewf_perl.conf
+Include conf.d/wck_perl.conf
 PerlCleanupHandler Apache2::SizeLimit
 
 #
@@ -307,7 +304,7 @@ UseCanonicalName Off
 # documents. By default, all requests are taken from this directory, but
 # symbolic links and aliases may be used to point to other locations.
 #
-DocumentRoot "/home/wck/htdocs/efiling/"
+DocumentRoot "/home/wck/htdocs"
 
 #
 # Each directory to which Apache has access can be configured with respect
@@ -329,183 +326,6 @@ DocumentRoot "/home/wck/htdocs/efiling/"
 # you might expect, make sure that you have specifically enabled it
 # below.
 #
-
-#
-# This should be changed to whatever you set DocumentRoot to.
-#
-  CookieTracking on
-  CookieDomain .{{ domain_name }}
-  
-  CookieExpires "25 months"
-  CookieName "chcookie"
-
-  SetEnv SECURE_SESSION_COOKIE 1
-
-  RewriteEngine on
-
-  RewriteCond %{HTTP_HOST} ^cy\.
-  RewriteRule (.*) https://{{ env_service_name }}.{{ domain_name }}$1?lang=cy [L]
-
-  #RewriteRule ^/$ /home/wck/htdocs/efiling/handlers/welcome #prejointincs
-  RewriteRule ^/$ /home/wck/htdocs/efiling/handlers/seclogin
-
-#  RewriteCond %{HTTPS} off
-#  RewriteRule (.*) https://{{ env_service_name }}.{{ domain_name }}/seclogin
-  #RewriteRule (.*) https://{{ env_service_name }}.{{ domain_name }}/seclogin
-
-  # Handle 'Common' Resource mapping
-  #
-  Alias /style/com/    "/home/wck/htdocs/sitecommon/style/"
-  Alias /images/com/   "/home/wck/htdocs/sitecommon/images/"
-  Alias /help/com/     "/home/wck/htdocs/sitecommon/help/"
-  Alias /html/com/     "/home/wck/htdocs/sitecommon/html/"
-  Alias /includes/com  "/home/wck/htdocs/sitecommon/includes/"
-# web inc change below
-  Alias /scripts/com  "/home/wck/htdocs/sitecommon/scripts/"
-  
-  # This regex is peculiar to avoid matching ../sitecommon/handlers as this
-  # needs executable permissions.
-  #
-  <Directory ~ "/home/wck/htdocs/sitecommon/[sih][tmen].*/.*">
-    # Two levels deep.... (images/en/ for example)
-    #
-    Options Includes FollowSymLinks
-    Order allow,deny 
-    Allow from all
-  </Directory>
-  
-  <Directory ~ "/home/wck/htdocs/sitecommon/[sih][tmen].*">
-    # One level deep.... (style/style.css for example)
-    #
-    Options Includes FollowSymLinks
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /ewfimages/ "/mnt/nfs/filings/recent_filings/"
-  <Directory "/mnt/nfs/filings/recent_filings/">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /ewfupload/ "/mnt/nfs/filings/upload/"
-   <Directory "/mnt/nfs/filings/upload/">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /errors/ "/home/wck/htdocs/efiling/errors/"
-  <Directory "/home/wck/htdocs/efiling/errors">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /images/ "/home/wck/htdocs/efiling/images/"
-  <Directory "/home/wck/htdocs/efiling/images">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /templates/ "/home/wck/htdocs/efiling/templates/en/stdwf/"
-  <Directory "/home/wck/htdocs/efiling/templates">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /style/ "/home/wck/htdocs/efiling/static/style/"
-  Alias /efstyle/ "/home/wck/htdocs/efiling/static/style/"
-  <Directory "/home/wck/htdocs/efiling/static/style">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /html/ "/home/wck/htdocs/efiling/static/html/"
-  <Directory "/home/wck/htdocs/efiling/static/html">
-    SetHandler default-handler
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /help/ "/home/wck/htdocs/efiling/static/help/"
-  <Directory "/home/wck/htdocs/efiling/static/help">
-    SetHandler default-handler
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-  Alias /hmrc-accounts/ "/home/wck/htdocs/efiling/static/hmrc-accounts/"
-  <Directory "/home/wck/htdocs/efiling/static/hmrc-accounts">
-    #SetHandler default-handler
-    Order allow,deny
-    Allow from all
-   <FilesMatch "\.(?i:pdf)$">
-        ForceType application/octet-stream
-        Header set Content-Disposition attachment
-    </FilesMatch>
-  </Directory>
-
-  Alias /scrs_plus/ "/home/wck/htdocs/efiling/static/scrs_plus/"
-  <Directory "/home/wck/htdocs/efiling/static/scrs_plus">
-      Order allow,deny
-      Allow from all
-  </Directory>
-
-  Alias /gov_uk/ "/home/wck/htdocs/efiling/static/gov_uk/"
-  <Directory "/home/wck/htdocs/efiling/static/gov_uk">
-    Order allow,deny
-    Allow from all
-  </Directory>
-
-# Site Common Handlers
-#
-# web incs two new alias match below
-  AliasMatch ^.*/com-(.*)\.htc$ "/home/wck/htdocs/sitecommon/style/$1.htc"
-  AliasMatch ^.*/(.*)\.htc$ "/home/wck/htdocs/efiling/static/style/$1.htc"
-  AliasMatch ^/com-(.*) "/home/wck/htdocs/sitecommon/handlers/$1"
-  <Directory  "/home/wck/htdocs/sitecommon/handlers">
-    Options Indexes Includes FollowSymLinks +ExecCGI
-    Order allow,deny
-    SetHandler perl-script
-#'    PerlFixupHandler +Apache::DB
-    PerlResponseHandler ModPerl::Registry
-    PerlOptions +ParseHeaders
-    Allow from all
-    DirectoryIndex userlogin
-  </Directory>
-
-  Alias /test-modperl "/home/wck/htdocs/efiling/handlers/test-modperl"
-  <Directory "/home/wck/htdocs/efiling/handlers">
-      AddDefaultCharset UTF-8
-      Options FollowSymLinks +ExecCGI Indexes
-      DirectoryIndex login
-      SetHandler perl-script
- #'     PerlFixupHandler +Apache::DB
-      PerlResponseHandler ModPerl::Registry
-      PerlOptions +ParseHeaders
-      Order allow,deny
-      Allow from all
-      PerlOutputFilterHandler Apache::CacheControlHeadersOutputFilter
-  </Directory>
-
-    Alias / "/home/wck/htdocs/efiling/handlers/"
-    <Directory "/home/wck/htdocs/efiling/handlers">
-      AddDefaultCharset UTF-8
-      Options FollowSymLinks +ExecCGI Indexes
-      DirectoryIndex login
-      SetHandler perl-script
-#'      PerlFixupHandler +Apache::DB
-      PerlResponseHandler ModPerl::Registry
-      PerlOptions +ParseHeaders
-      Order allow,deny
-      Allow from all
-     # Additional Headers
-     # Header add Cache-Control "no-cache, no-store, must-revalidate"
-     # Header add Pragma "no-cache"
-     #FEB Changes
-      PerlOutputFilterHandler Apache::CacheControlHeadersOutputFilter
-
-    DirectoryIndex welcome index
-  </Directory>
 
 # UserDir: The name of the directory that is appended onto a user's home
 # directory if a ~user request is received.
@@ -560,7 +380,7 @@ DocumentRoot "/home/wck/htdocs/efiling/"
 # negotiated documents.  The MultiViews Option can be used for the 
 # same purpose, but it is much slower.
 #
-# DirectoryIndex login index index.html index.html.var
+DirectoryIndex wclogin
 
 #
 # AccessFileName: The name of the file to look for in each directory
@@ -633,7 +453,6 @@ HostnameLookups Off
 # http://httpd.apache.org/docs-2.0/mod/core.html#enablesendfile
 #
 #EnableSendfile off
-#
 
 #
 # ErrorLog: The location of the error log file.
@@ -642,7 +461,7 @@ HostnameLookups Off
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog /var/log/httpd/ewf_error_log
+ErrorLog /var/log/httpd/wck_error_log
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
@@ -668,7 +487,7 @@ LogFormat "%{User-agent}i" agent
 # logged therein and *not* in this file.
 #
 # CustomLog logs/access_log common
-CustomLog /var/log/httpd/ewf_access_log combined
+CustomLog /var/log/httpd/wck_access_log combined
 
 #
 # If you would like to have agent and referer logfiles, uncomment the
@@ -760,8 +579,6 @@ ServerSignature Off
 # clients where to look for the relocated document.
 # Example:
 # Redirect permanent /foo http://www.example.com/bar
-#Release_2_2012
-RedirectMatch 301 (.*)/welcome $1/seclogin
 
 #
 # Directives controlling the display of server-generated directory listings.
@@ -780,40 +597,40 @@ IndexOptions FancyIndexing VersionSort NameWidth=*
 # files or filename extensions.  These are only displayed for
 # FancyIndexed directories.
 #
-#AddIconByEncoding (CMP,/icons/compressed.gif) x-compress x-gzip
+AddIconByEncoding (CMP,/icons/compressed.gif) x-compress x-gzip
 
-#AddIconByType (TXT,/icons/text.gif) text/*
-#AddIconByType (IMG,/icons/image2.gif) image/*
-#AddIconByType (SND,/icons/sound2.gif) audio/*
-#AddIconByType (VID,/icons/movie.gif) video/*
+AddIconByType (TXT,/icons/text.gif) text/*
+AddIconByType (IMG,/icons/image2.gif) image/*
+AddIconByType (SND,/icons/sound2.gif) audio/*
+AddIconByType (VID,/icons/movie.gif) video/*
 
-#AddIcon /icons/binary.gif .bin .exe
-#AddIcon /icons/binhex.gif .hqx
-#AddIcon /icons/tar.gif .tar
-#AddIcon /icons/world2.gif .wrl .wrl.gz .vrml .vrm .iv
-#AddIcon /icons/compressed.gif .Z .z .tgz .gz .zip
-#AddIcon /icons/a.gif .ps .ai .eps
-#AddIcon /icons/layout.gif .html .shtml .htm .pdf
-#AddIcon /icons/text.gif .txt
-#AddIcon /icons/c.gif .c
-#AddIcon /icons/p.gif .pl .py
-#AddIcon /icons/f.gif .for
-#AddIcon /icons/dvi.gif .dvi
-#AddIcon /icons/uuencoded.gif .uu
-#AddIcon /icons/script.gif .conf .sh .shar .csh .ksh .tcl
-#AddIcon /icons/tex.gif .tex
-#AddIcon /icons/bomb.gif core
-#
-#AddIcon /icons/back.gif ..
-#AddIcon /icons/hand.right.gif README
-#AddIcon /icons/folder.gif ^^DIRECTORY^^
-#AddIcon /icons/blank.gif ^^BLANKICON^^
+AddIcon /icons/binary.gif .bin .exe
+AddIcon /icons/binhex.gif .hqx
+AddIcon /icons/tar.gif .tar
+AddIcon /icons/world2.gif .wrl .wrl.gz .vrml .vrm .iv
+AddIcon /icons/compressed.gif .Z .z .tgz .gz .zip
+AddIcon /icons/a.gif .ps .ai .eps
+AddIcon /icons/layout.gif .html .shtml .htm .pdf
+AddIcon /icons/text.gif .txt
+AddIcon /icons/c.gif .c
+AddIcon /icons/p.gif .pl .py
+AddIcon /icons/f.gif .for
+AddIcon /icons/dvi.gif .dvi
+AddIcon /icons/uuencoded.gif .uu
+AddIcon /icons/script.gif .conf .sh .shar .csh .ksh .tcl
+AddIcon /icons/tex.gif .tex
+AddIcon /icons/bomb.gif core
+
+AddIcon /icons/back.gif ..
+AddIcon /icons/hand.right.gif README
+AddIcon /icons/folder.gif ^^DIRECTORY^^
+AddIcon /icons/blank.gif ^^BLANKICON^^
 
 #
 # DefaultIcon is which icon to show for files which do not have an icon
 # explicitly set.
 #
-#DefaultIcon /icons/unknown.gif
+DefaultIcon /icons/unknown.gif
 
 #
 # AddDescription allows you to place a short description after a file in
@@ -831,7 +648,6 @@ IndexOptions FancyIndexing VersionSort NameWidth=*
 #
 # HeaderName is the name of a file which should be prepended to
 # directory indexes. 
-#
 ReadmeName README.html
 HeaderName HEADER.html
 
@@ -847,8 +663,8 @@ IndexIgnore .??* *~ *# HEADER* README* RCS CVS *,v *,t
 # Despite the name similarity, the following Add* directives have nothing
 # to do with the FancyIndexing customization directives above.
 #
-AddEncoding x-compress Z
-AddEncoding x-gzip gz tgz
+#AddEncoding x-compress Z
+#AddEncoding x-gzip gz tgz
 
 #
 # DefaultLanguage and AddLanguage allows you to specify the language of 
@@ -888,31 +704,32 @@ AddEncoding x-gzip gz tgz
 # Polish (pl) - Brazilian Portuguese (pt-br) - Japanese (ja)
 # Russian (ru) - Croatian (hr)
 #
+AddLanguage ca .ca
+AddLanguage cs .cz .cs
 AddLanguage da .dk
-AddLanguage nl .nl
+AddLanguage de .de
+AddLanguage el .el
 AddLanguage en .en
+AddLanguage eo .eo
+AddLanguage es .es
 AddLanguage et .et
 AddLanguage fr .fr
-AddLanguage de .de
 AddLanguage he .he
-AddLanguage el .el
+AddLanguage hr .hr
 AddLanguage it .it
 AddLanguage ja .ja
-AddLanguage pl .po
 AddLanguage ko .ko
-AddLanguage pt .pt
+AddLanguage ltz .ltz
+AddLanguage nl .nl
 AddLanguage nn .nn
 AddLanguage no .no
-AddLanguage pt-br .pt-br
-AddLanguage ltz .ltz
-AddLanguage ca .ca
-AddLanguage es .es
-AddLanguage sv .sv
-AddLanguage cs .cz .cs
+AddLanguage pl .po
+AddLanguage pt .pt
+AddLanguage pt-BR .pt-br
 AddLanguage ru .ru
+AddLanguage sv .sv
 AddLanguage zh-CN .zh-cn
 AddLanguage zh-TW .zh-tw
-AddLanguage hr .hr
 
 #
 # LanguagePriority allows you to give precedence to some languages
@@ -921,7 +738,7 @@ AddLanguage hr .hr
 # Just list the languages in decreasing order of preference. We have
 # more or less alphabetized them here. You probably want to change this.
 #
-LanguagePriority en da nl et fr de el it ja ko no pl pt pt-br ltz ca es sv tw
+LanguagePriority en ca cs da de el eo es et fr he hr it ja ko ltz nl nn no pl pt pt-BR ru sv zh-CN zh-TW
 
 #
 # ForceLanguagePriority allows you to serve a result page rather than
@@ -992,7 +809,9 @@ AddCharset shift_jis   .sjis
 # AddType allows you to add to or override the MIME configuration
 # file mime.types for specific file types.
 #
-AddType application/x-tar .tgz
+#AddType application/x-tar .tgz
+AddType application/x-compress .Z
+AddType application/x-gzip .gz .tgz
 
 #
 # AddHandler allows you to map certain file extensions to "handlers":
@@ -1002,12 +821,12 @@ AddType application/x-tar .tgz
 # To use CGI scripts outside of ScriptAliased directories:
 # (You will also need to add "ExecCGI" to the "Options" directive.)
 #
-#AddHandler cgi-script .cgi
+AddHandler cgi-script .cgi
 
 #
 # For files that include their own HTTP headers:
 #
-AddHandler send-as-is asis
+#AddHandler send-as-is asis
 
 #
 # For server-parsed imagemap files:
@@ -1026,11 +845,8 @@ AddHandler type-map var
 # To parse .shtml files for server-side includes (SSI):
 # (You will also need to add "Includes" to the "Options" directive.)
 #
-# added as per ewfpreprodtest for web incs
 AddType text/html .shtml
 AddOutputFilter INCLUDES .shtml
-#web inc change below
-AddType text/x-component .htc
 
 #
 # Action lets you define media types that will execute a script whenever
@@ -1070,18 +886,18 @@ AddType text/x-component .htc
 
 #Alias /error/ "/var/www/error/"
 
-<IfModule mod_negotiation.c>
-<IfModule mod_include.c>
-    <Directory "/var/www/error">
-        AllowOverride None
-        Options IncludesNoExec
-        AddOutputFilter Includes html
-        AddHandler type-map var
-        Order allow,deny
-        Allow from all
-        LanguagePriority en es de fr
-        ForceLanguagePriority Prefer Fallback
-    </Directory>
+#<IfModule mod_negotiation.c>
+#<IfModule mod_include.c>
+#    <Directory "/var/www/error">
+#        AllowOverride None
+#        Options IncludesNoExec
+#        AddOutputFilter Includes html
+#        AddHandler type-map var
+#        Order allow,deny
+#        Allow from all
+#        LanguagePriority en es de fr
+#        ForceLanguagePriority Prefer Fallback
+#    </Directory>
 
 #    ErrorDocument 400 /error/HTTP_BAD_REQUEST.html.var
 #    ErrorDocument 401 /error/HTTP_UNAUTHORIZED.html.var
@@ -1101,8 +917,8 @@ AddType text/x-component .htc
 #    ErrorDocument 503 /error/HTTP_SERVICE_UNAVAILABLE.html.var
 #    ErrorDocument 506 /error/HTTP_VARIANT_ALSO_VARIES.html.var
 
-</IfModule>
-</IfModule>
+#</IfModule>
+#</IfModule>
 
 #
 # The following directives modify normal HTTP response behavior to
@@ -1199,20 +1015,222 @@ BrowserMatch "^gnome-vfs" redirect-carefully
 #
 # Use name-based virtual hosting.
 #
-#NameVirtualHost *:80
+NameVirtualHost *:80
 
-#
-# VirtualHost example:
-# Almost any Apache directive may go into a VirtualHost container.
-# The first VirtualHost section is used for requests without a known
-# server name.
-#
-#<VirtualHost *>
-#    ServerAdmin webmaster@dummy-host.example.com
-#    DocumentRoot /www/docs/dummy-host.example.com
-#    ServerName dummy-host.example.com
-#    ErrorLog logs/dummy-host.example.com-error_log
-#    CustomLog logs/dummy-host.example.com-access_log common
-#</VirtualHost>
+<VirtualHost *:80>
+    ServerName {{ env_service_name }}.{{ domain_name }}
+    ServerAdmin enquiries@{{ domain_name }}
+
+    DocumentRoot "/home/wck/htdocs"
+
+    SetEnv ORACLE_HOME /usr/lib/oracle/11.2/client64
+
+    CookieTracking on
+    CookieDomain .companieshouse.gov.uk
+    CookieExpires "25 months"
+    CookieName "chcookie"
+
+    RewriteEngine on
+
+    RewriteRule ^/$     /home/wck/htdocs/chd3/handlers/wclogin
+
+    RewriteCond %{HTTP_USER_AGENT} (^libwww-perl|^php|^http_requester)
+    RewriteRule ^/.* http://download.companieshouse.gov.uk/en_output.html
+
+    Alias              /robots.txt      "/home/wck/htdocs/robots.txt"
+    Alias              /goWCK/help/  "/home/wck/htdocs/chd3/static/help/"
+
+    # Handle 'Common' Resource mapping
+    #
+    Alias /style/com/    "/home/wck/htdocs/sitecommon/style/"
+    Alias /images/com/   "/home/wck/htdocs/sitecommon/images/"
+    Alias /scripts/com/  "/home/wck/htdocs/sitecommon/scripts/"
+    Alias /help/com/     "/home/wck/htdocs/sitecommon/help/"
+    Alias /html/com/     "/home/wck/htdocs/sitecommon/html/"
+    Alias /includes/com  "/home/wck/htdocs/sitecommon/includes/"
+
+    # This regex is peculiar to avoid matching ../sitecommon/handlers as this
+    # needs executable permissions.
+    #
+    <Directory ~ "/home/wck/htdocs/sitecommon/[sih][tmen].*/.*">
+      Options Includes FollowSymLinks
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    <Directory ~ "/home/wck/htdocs/sitecommon/[sih][tmen].*">
+      Options Includes FollowSymLinks
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias /errors/ "/home/wck/htdocs/chd3/errors/"
+    <Directory "/home/wck/htdocs/chd3/errors">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias /help/ "/home/wck/htdocs/chd3/static/help/"
+    <Directory "/home/wck/htdocs/chd3/static/help">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias /images/ "/home/wck/htdocs/chd3/images/"
+    <Directory "/home/wck/htdocs/chd3/images">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias /style/ "/home/wck/htdocs/chd3/static/style/"
+    <Directory "/home/wck/htdocs/chd3/static/style">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    # Site Common Handlers
+    #
+    AliasMatch ^/com-(.*) "/home/wck/htdocs/sitecommon/handlers/$1"
+    <Directory  "/home/wck/htdocs/sitecommon/handlers">
+      Options Indexes Includes FollowSymLinks +ExecCGI
+      SetHandler perl-script
+      PerlResponseHandler ModPerl::Registry
+      PerlOptions +ParseHeaders
+      Order allow,deny
+      Allow from all
+      #DirectoryIndex userlogin
+
+     # Additional Headers
+      Header add Cache-Control "no-cache, no-store, must-revalidate"
+      Header add Pragma "no-cache"
+    </Directory>
+
+
+    Alias / "/home/wck/htdocs/chd3/handlers/"
+    <Directory "/home/wck/htdocs/chd3/handlers">
+      Options Indexes FollowSymLinks +ExecCGI
+      SetHandler perl-script
+      PerlResponseHandler ModPerl::Registry
+      PerlOptions +ParseHeaders
+      Order allow,deny
+      Allow from all
+
+     # Additional Headers
+      Header add Cache-Control "no-cache, no-store, must-revalidate"
+      Header add Pragma "no-cache"
+      DirectoryIndex wclogin
+    </Directory>
+
+    ErrorLog     /var/log/httpd/wck_error_log
+    CustomLog /var/log/httpd/wck_access_lb_ip_log combined env=!forwarded
+    CustomLog /var/log/httpd/wck_access_log proxy env=forwarded
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName  data.{{ domain_name }}
+    ServerAdmin enquiries@{{ domain_name }}
+
+    RewriteEngine on
+
+    AliasMatch ^.*/doc/company/([^.]+)$ "/home/wcklive/htdocs/chd3/static/typemap/uritypes"
+
+    <Directory "/home/wck/htdocs/chd3/static/typemap/uritypes">
+      <FilesMatch ^[^.]+$>
+          SetHandler type-map
+      </FilesMatch>
+  
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    # Match Request_URI _after_ content negotiaion has taken place (the URI has
+    # an extension) and extract the extention into an env variable.
+    #
+    # Match domain/doc/ew/uridetails.html putting html in environment
+    #
+    SetEnvIf Request_URI "/doc/company/.+\.(.+)$"  CONTENT_NEGOTIATION=$1
+
+    # Map the content negotiated URI to the appropriate handler by dropping the
+    # extension (which was only needed to set the CONTENT_NEGOTIATION env var)
+    # and rewriting to the handlers directory.
+    #
+    # Match domain/doc/company/uridetails.html and invoke hanlder "uridetails"
+    #
+    RewriteRule /doc/company/([^.]+)\..+ "/home/wck/htdocs/chd3/handlers/uridetails"
+  
+    # REPLACE existing logging with the following to get the content negotiated
+    # type logged out.
+    #
+    ErrorLog  /var/log/httpd/wck_datalive_error_log
+    CustomLog /var/log/httpd/wck_datalive_access_log \
+            "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %b %{CONTENT_NEGOTIATION}e \"%{User-Agent}i\"" env=forwarded
+    CustomLog /var/log/httpd/wck_datalive_access_lb_ip_log combined env=!forwarded
+
+    SetEnv ORACLE_HOME /usr/lib/oracle/11.2/client64
+
+    Alias /images/ "/home/wck/htdocs/chd3/images/"
+    <Directory "/home/wck/htdocs/chd3/images">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias /style/ "/home/wck/htdocs/chd3/static/style/"
+    <Directory "/home/wck/htdocs/chd3/static/style">
+      Order allow,deny
+      Allow from all
+    </Directory>
+
+    Alias / "/home/wck/htdocs/chd3/handlers/"
+    <Directory "/home/wck/htdocs/chd3/handlers">
+      Options Indexes FollowSymLinks +ExecCGI
+      SetHandler perl-script
+      PerlResponseHandler ModPerl::Registry
+      PerlOptions +ParseHeaders
+      Order allow,deny
+      Allow from all
+
+     # Additional Headers
+      Header add Cache-Control "no-cache, no-store, must-revalidate"
+      Header add Pragma "no-cache"
+      Header add Access-Control-Allow-Origin "*"
+    </Directory>
+
+</VirtualHost>
+
+<VirtualHost *:80>
+    ServerName  business.data.gov.uk
+    ServerAdmin enquiries@{{ domain_name }}
+
+    ### Reverse proxy config for triple store
+    SetEnvIf User-Agent ".*MSIE.*"  nokeepalive ssl-unclean-shutdown  downgrade-1.0 force-response-1.0
+    SetEnv force-proxy-request-1.0 1
+    SetEnv proxy-nokeepalive 1
+
+    ProxyRequests Off
+    ProxyPreserveHost  On
+    <Proxy *>
+      Order deny,allow
+      Allow from all
+    </Proxy>
+
+    <Location /companies>
+      ProxyPass        http://ch-lb-1.epimorphics.net/companies
+      ProxyPassReverse http://ch-lb-1.epimorphics.net/companies
+    </Location>
+
+    RewriteEngine on
+
+    # Redirect from "virtual" id URI of resource, to actual physical resource
+    #
+    RedirectMatch 303 ^/id/company/(.+)$ "http://data.companieshouse.gov.uk/doc/company/$1"
+
+    # Send anyone accessing business.data.gov.uk/ to data.gov.uk
+    RedirectMatch 302 ^/$ "http://data.gov.uk/"
+
+    ErrorLog     /var/log/httpd/wck_businesslive_error_log
+    CustomLog    /var/log/httpd/wck_businesslive_access_lb_ip_log combined env=!forwarded
+    CustomLog    /var/log/httpd/wck_businesslive_access_log proxy env=forwarded
+</VirtualHost>
 
 TraceEnable off

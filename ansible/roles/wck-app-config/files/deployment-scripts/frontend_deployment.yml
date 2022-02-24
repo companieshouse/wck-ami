@@ -16,8 +16,7 @@
       config_files:
         - "WCK"
     roles:
-      - role: /root/roles/nfs_mounts
-        when: mounts is defined
+      - { role: /root/roles/nfs_mounts }
       - name: ch_collections.base.cloudwatch_agent_config
         when: cw_log_files is defined
     tasks:
@@ -100,8 +99,8 @@
           mode: 0644
         loop:
           - /etc/httpd/conf/httpd.conf
-          - /etc/httpd/conf/startup.pl
-          - /etc/httpd/conf.d/perl.conf
+          - /etc/httpd/conf/wck_startup.pl
+          - /etc/httpd/conf.d/wck_perl.conf
 
       - name: Enable and start httpd to complete deployment
         ansible.builtin.service:
