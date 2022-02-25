@@ -33,7 +33,7 @@ use Common::CVTable;
 use Common::DateHelper;
 use CommonDB::accountDetails;
 use CommonDB::auth;
-use CommonDB::Customer;
+use CommonDB::customer;
 use CommonDB::cvClass;
 use CommonDB::cvClassCollection;
 use CommonDB::CVConstants qw( :DEFAULT );
