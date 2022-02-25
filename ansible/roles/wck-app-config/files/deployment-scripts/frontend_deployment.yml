@@ -14,7 +14,7 @@
         - "MODULES"
         - "htdocs"
       config_files:
-        - "WCK"
+        - "CHD"
     roles:
       - { role: /root/roles/nfs_mounts }
       - name: ch_collections.base.cloudwatch_agent_config
