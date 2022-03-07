@@ -12,6 +12,8 @@
       directories:
         - "DATA"
         - "MODULES"
+        - "CHSQL"
+        - "COMMONSQL"
         - "bcdbackend"
         - "chd3backend"
         - "efbackend"
