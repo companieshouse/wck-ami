@@ -15,6 +15,7 @@
         - "CHSQL"
         - "COMMONSQL"
         - "bcdbackend"
+        - "chd3backend"
         - "efbackend"
         - "conf"
       config_files:
