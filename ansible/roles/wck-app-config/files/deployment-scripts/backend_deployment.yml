@@ -20,6 +20,7 @@
         - "conf"
       config_files:
         - "BEP"
+        - "COM"
     roles:
       - { role: /root/roles/nfs_mounts }
       - name: ch_collections.base.cloudwatch_agent_config
