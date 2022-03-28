@@ -79,6 +79,7 @@ $ENV{TNS_ADMIN}="/usr/lib/oracle/11.2/client64/lib/";
 $ENV{NLS_LANG}   = "ENGLISH_UNITED KINGDOM.UTF8";
 $ENV{LC_ALL}     = "en_GB.UTF-8";
 $ENV{DBCONNECT_PING_RATE}=40;
+$ENV{HTTPS}=1;
 
 warn "wck_startup.pl - done\n";
 1;
