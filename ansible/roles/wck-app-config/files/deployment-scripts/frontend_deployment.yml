@@ -16,6 +16,12 @@
       config_files:
         - "CHD"
         - "COM"
+      template_files:
+        - "accessCompanyInfo"
+        - "basket"
+        - "comp_details"
+        - "topNav"
+        - "wcprodorder"
     roles:
       - { role: /root/roles/nfs_mounts }
       - name: ch_collections.base.cloudwatch_agent_config
@@ -83,6 +89,22 @@
           group: chlservices
           mode: 0755
         loop: "{{ config_files }}"
+
+      - name: Download template files from S3
+        aws_s3:
+          bucket: "{{ s3_bucket_configs }}"
+          object: "chl-{{ application_config_name }}-configs/{{ heritage_environment }}/templates/{{ item }}.tmpl"
+          dest: "{{ home_dir }}/htdocs/chd3/templates/en/stdwc/{{ item }}.tmpl"
+          mode: get
+        loop: "{{ template_files }}"
+
+      - name: Change template files owner and permissions
+        ansible.builtin.file:
+          path: "{{ home_dir }}/htdocs/chd3/templates/en/stdwc/{{ item }}.tmpl"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          mode: 0755
+        loop: "{{ template_files }}"
 
       - name: Cleanup install files
         file:
