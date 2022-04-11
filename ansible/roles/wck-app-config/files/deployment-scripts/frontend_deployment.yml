@@ -16,6 +16,7 @@
       config_files:
         - "CHD"
         - "COM"
+        - "MCH"
       template_files:
         - "accessCompanyInfo"
         - "basket"
