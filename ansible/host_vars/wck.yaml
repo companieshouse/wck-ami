@@ -75,3 +75,7 @@ nrpe_command:
   check_users:
     script: check_users
     option: $ARG1$
+
+## FTP Server
+ftp_server_package: "vsftpd"
+ftp_server_service: "{{ ftp_server_package }}"
