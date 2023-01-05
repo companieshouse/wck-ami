@@ -116,7 +116,7 @@
         aws_s3:
           bucket: "{{ s3_bucket_configs }}"
           object: "chl-{{ application_config_name }}-configs/{{ heritage_environment }}/static/help/{{ item }}.html"
-          dest: "{{ home_dir }}/htdocs/chd3/static/help/en/{{ item }}.html"
+          dest: "{{ home_dir }}/htdocs/chd3/static/help/en/stdwc/{{ item }}.html"
           mode: get
         loop: "{{ help_files }}"
 
