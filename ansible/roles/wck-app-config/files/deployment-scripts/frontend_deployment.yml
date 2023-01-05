@@ -23,6 +23,11 @@
         - "comp_details"
         - "topNav"
         - "wcprodorder"
+        - "searchNav"
+      help_files:
+        - "ordering_ch"
+        - "prodinfo_ch"
+        - "download_ch"
     roles:
       - { role: /root/roles/nfs_mounts }
       - name: ch_collections.base.cloudwatch_agent_config
@@ -106,6 +111,22 @@
           group: chlservices
           mode: 0755
         loop: "{{ template_files }}"
+
+      - name: Download help files from S3
+        aws_s3:
+          bucket: "{{ s3_bucket_configs }}"
+          object: "chl-{{ application_config_name }}-configs/{{ heritage_environment }}/static/help/{{ item }}.html"
+          dest: "{{ home_dir }}/htdocs/chd3/static/help/en/stdwc/{{ item }}.html"
+          mode: get
+        loop: "{{ help_files }}"
+
+      - name: Change help files owner and permissions
+        ansible.builtin.file:
+          path: "{{ home_dir }}/htdocs/chd3/static/help/en/{{ item }}.html"
+          owner: "{{ home_dir | basename }}"
+          group: chlservices
+          mode: 0664
+        loop: "{{ help_files }}"
 
       - name: Cleanup install files
         file:
